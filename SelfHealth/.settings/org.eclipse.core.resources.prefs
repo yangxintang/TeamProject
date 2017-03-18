@@ -1,2 +1,4 @@
 eclipse.preferences.version=1
+encoding//com.selfhealth.source/application.properties=UTF-8
+encoding//com.selfhealth.source/log4j.properties=UTF-8
 encoding/<project>=UTF-8
