@@ -10,15 +10,16 @@
 <head>
     <title>Spring Security CAS Client</title>
     <meta charset="UTF-8"/>
-    <link rel="stylesheet" href="/resources/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css"/>
 </head>
 <body>
 <div class="container">
     <ul class="nav nav-tabs">
+    	<li><a href="${pageContext.request.contextPath}/user/user">user info</a></li>
         <li><a href="/index.jsp">Call the /index.jsp page</a></li>
         <li class="active"><a href="/protected/index.jsp">You are on the /protected/index.jsp page</a></li>
         <!-- #### change with your own CAS server and your host name #### -->
-        <li><a href="http://localhost:8080/cas/logout?service=http://localhost:8081">Call the CAS logout</a></li>
+        <li><a href="https://localhost:8443/cas/logout">Call the CAS logout</a></li>
     </ul>
     <br>
     <h3>

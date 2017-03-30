@@ -3,21 +3,30 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:sec="http://www.springframework.org/schema/security"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
-
-    <sec:http use-expressions="true" entry-point-ref="casEntryPoint">
-        <sec:intercept-url pattern="/protected/**" access="isAuthenticated()"/>
+    
+    
+    <sec:http use-expressions="true" entry-point-ref="casEntryPoint"> 
+    	<sec:intercept-url pattern="/resources/**" access="permitAll"/>
+    	<sec:intercept-url pattern="/main/common" access="permitAll"/>
+        <sec:intercept-url pattern="/main/admin" access="isAuthenticated()"/>
+        <sec:intercept-url pattern="/user/**" access="isAuthenticated()"/>
         <sec:intercept-url pattern="/**" access="permitAll"/>
-        <sec:custom-filter position="CAS_FILTER" ref="casFilter"/>
+        <sec:form-login  
+            login-page="https://localhost:8443/cas/login"   
+            authentication-failure-url="/auth/login?error=true"   
+            default-target-url="/main/common"/>  
+        <sec:logout invalidate-session="true" logout-url="https://localhost:8443/cas/logout"
+			logout-success-url="/" />
         <!-- Handle CAS logout request from the browser (on /j_spring_security_logout): -->
-        <sec:logout/>
+        <sec:logout invalidate-session="true" />
+        <!-- Handle CAS logout directly from the CAS server: -->
+        <sec:custom-filter position="CAS_FILTER" ref="casFilter"/>
         <!-- Handle CAS logout directly from the CAS server: -->
         <sec:custom-filter before="CAS_FILTER" ref="singleLogoutFilter"/>
+        <!-- MyFilter -->
+        <sec:custom-filter before="FILTER_SECURITY_INTERCEPTOR" ref="myFilter"/>
     </sec:http>
-
-    <bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
-        <property name="authenticationManager" ref="authenticationManager"/>
-    </bean>
-
+    
     <bean id="singleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter">
         <property name="casServerUrlPrefix" value="https://localhost:8443/cas/logout"/>
     </bean>
@@ -39,7 +48,7 @@
         <sec:authentication-provider ref="casAuthenticationProvider"/>
     </sec:authentication-manager>
 
-    <bean id="casUserDetailService" class="org.springframework.security.core.userdetails.CasUserDetailService">
+    <bean id="casUserDetailService" class="com.istrom.service.CasUserDetailService">
     </bean>
 
     <bean id="casAuthenticationProvider"
@@ -55,5 +64,26 @@
         </property>
         <property name="key" value="an_id_for_this_auth_provider_only"/>
     </bean>
+    
+    <!-- 资源源数据定义，将所有的资源和权限对应关系建立起来，即定义某一资源可以被哪些角色去访问。11/3/23 --> 
+    <bean id="customSecurityMetadataSource"  init-method="initResource"
+        class="com.istrom.service.CasMetadataSource"> 
+    </bean> 
+ 
+    <!-- 访问决策器，决定某个用户具有的角色，是否有足够的权限去访问某个资源。11/3/23 --> 
+    <bean id="customAccessDecisionManager" 
+        class="com.istrom.service.CasAccessDecisionManager"> 
+    </bean>
+    
+    
+    <bean id="casFilter" class="org.springframework.security.cas.web.CasAuthenticationFilter">
+        <property name="authenticationManager" ref="authenticationManager"/>
+    </bean>
+    
+   <bean id="myFilter" class="com.istrom.service.SecurityFilter">
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="accessDecisionManager" ref="customAccessDecisionManager" /><!-- 资源访问决策 --> 
+        <property name="securityMetadataSource" ref="customSecurityMetadataSource" /><!-- 资源和权限列表 --> 
+   </bean> 
 
 </beans>

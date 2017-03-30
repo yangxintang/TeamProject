@@ -10,7 +10,7 @@
     <!-- logger name="org.jasig.cas" level="TRACE" />
     <logger name="org.springframework.security" level="TRACE" /-->
 
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 
